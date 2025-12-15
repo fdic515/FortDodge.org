@@ -69,17 +69,17 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json(
-      {
-        ok: true,
-        visibility,
+    // In production on Vercel, aggressive CDN caching here can cause
+    // page visibility to feel "delayed" after admin changes.
+    // Use no-store so every request reflects the latest DB state.
+    return NextResponse.json({
+      ok: true,
+      visibility,
+    }, {
+      headers: {
+        "Cache-Control": "no-store",
       },
-      {
-        headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-        },
-      }
-    );
+    });
   } catch (error: any) {
     console.error("[page-visibility] Error:", error);
     return NextResponse.json(
