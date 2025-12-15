@@ -192,9 +192,18 @@ export default function FinancialDrawer({
     setDataLoaded(true);
   };
 
-  // Set up subscription (only subscribe, don't fetch on mount)
+  // Fetch data once on mount (page load) - only 1 API call
   useEffect(() => {
     let mounted = true;
+
+    // Fetch data once if cache is empty, otherwise use cached data
+    fetchFinancialCached(false).then((data) => {
+      if (mounted && data) {
+        applySrcToState(data);
+      }
+    }).catch((err) => {
+      console.error('[FinancialDrawer] fetchFinancialCached error:', err);
+    });
 
     // Subscribe to cache updates so we update when cache changes (even when drawer is closed)
     const unsubscribe = subscribeToFinancialCache((data) => {
@@ -206,24 +215,6 @@ export default function FinancialDrawer({
 
     return () => { mounted = false; unsubscribe(); };
   }, []);
-
-  // Always fetch fresh data when drawer opens
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    let mounted = true;
-
-    // Always force fetch fresh data from database when drawer opens
-    fetchFinancialCached(true).then((data) => {
-      if (mounted && data) {
-        applySrcToState(data);
-      }
-    }).catch((err) => {
-      console.error('[FinancialDrawer] fetchFinancialCached error:', err);
-    });
-
-    return () => { mounted = false; };
-  }, [isOpen]);
 
   // Only use localHeader from Supabase - ignore header prop to avoid showing static data
   // Only show header when data is loaded from Supabase
@@ -247,6 +238,8 @@ export default function FinancialDrawer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           formName: "Financial Assistance",
+          email: data["email"] || undefined,
+          name: data["applicantName"] || undefined,
           subject: `Financial assistance: ${data["applicantName"] || "(no name)"}`,
           text: Object.entries(data)
             .map(([k, v]) => `${k}: ${v}`)

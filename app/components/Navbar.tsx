@@ -58,76 +58,49 @@ const resourcesMenuItems: ResourceMenuItem[] = [
   { label: "Reserve Basement", href: "/resources#reserve-basement", drawer: "reserveBasement" },
 ];
 
-// Default visibility map - all pages visible by default for immediate rendering
+// Default visibility map - start empty; items render only after API visibility is loaded
 const getDefaultVisibility = (): Record<string, boolean> => {
-  const hrefMap: Record<string, string> = {
-    "home": "/",
-    "ramadan": "/ramadan",
-    "donate": "/donate",
-    "new-muslim": "/new-musilm",
-    "report-death": "/report-death",
-    "resources": "/resources",
-    "about": "/about",
-    "request-a-speaker": "/resources/request-a-speaker",
-    "request-a-visit": "/resources/request-a-visit",
-    "visitors-guide": "/resources/visitors-guide",
-    "islamic-prayer": "/resources/islamic-prayer",
-    "islamic-school": "/resources/islamic-school",
-    "elections-nominations": "/resources/elections-nominations",
-  };
-  
-  const defaultVisibility: Record<string, boolean> = {};
-  Object.values(hrefMap).forEach((href) => {
-    defaultVisibility[href] = true; // Show all by default
-  });
-  return defaultVisibility;
+  return {};
 };
 
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
-  const [isMembershipDrawerOpen, setIsMembershipDrawerOpen] = useState(false);
-  const [isFinancialDrawerOpen, setIsFinancialDrawerOpen] = useState(false);
-  const [isDoorAccessDrawerOpen, setIsDoorAccessDrawerOpen] = useState(false);
-  const [isReserveBasementDrawerOpen, setIsReserveBasementDrawerOpen] = useState(false);
-  const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
-  // Start with default visibility - items show immediately, then update when API responds
-  const [pageVisibility, setPageVisibility] = useState<Record<string, boolean>>(getDefaultVisibility());
-  const [visibilityLoaded, setVisibilityLoaded] = useState<boolean>(false);
-  const [resourcesData, setResourcesData] = useState<any | null>(null);
-  const [contactData, setContactData] = useState<any | null>(null);
-  const pathname = usePathname();
+// In-memory client-side cache for page visibility to prevent duplicate API calls
+let pageVisibilityCache: Record<string, boolean> | null = null;
+let pageVisibilityFetchPromise: Promise<Record<string, boolean> | null> | null = null;
+const pageVisibilitySubscribers = new Set<(data: Record<string, boolean> | null) => void>();
 
-  // Fetch page visibility status - use single API call for faster loading
-  useEffect(() => {
-    async function fetchPageVisibility() {
+async function fetchPageVisibilityCached(force = false): Promise<Record<string, boolean> | null> {
+    if (pageVisibilityCache && !force) return pageVisibilityCache;
+    if (pageVisibilityFetchPromise && !force) return pageVisibilityFetchPromise;
+
+    pageVisibilityFetchPromise = (async () => {
       try {
         console.log("[Navbar] Fetching page visibility...");
-        // Single API call to get all visibility data at once
         const response = await fetch("/api/page-visibility", {
-          cache: 'no-store', // Always fetch fresh data
+          cache: 'no-store',
         });
-        
-        console.log("[Navbar] Page visibility response:", response.status);
 
-        // Defensive checks: some servers return HTML (error page) instead of JSON
-        // which causes `response.json()` to throw `Unexpected token '<'` in the console.
         const contentType = response.headers.get("content-type") || "";
 
         if (!response.ok) {
-          // Log text body to help debugging (likely an HTML error page or redirect)
           const text = await response.text();
           console.error("/api/page-visibility responded with non-OK status:", response.status, text);
-          // Fall back to marking visibility as loaded (do not block navigation)
-          setVisibilityLoaded(true);
-          return;
+          pageVisibilityCache = null;
+          pageVisibilityFetchPromise = null;
+          pageVisibilitySubscribers.forEach((cb) => {
+            try { cb(null); } catch (e) { console.error(e); }
+          });
+          return null;
         }
 
         if (!contentType.includes("application/json")) {
           const text = await response.text();
           console.error("/api/page-visibility returned non-JSON response:", contentType, text);
-          setVisibilityLoaded(true);
-          return;
+          pageVisibilityCache = null;
+          pageVisibilityFetchPromise = null;
+          pageVisibilitySubscribers.forEach((cb) => {
+            try { cb(null); } catch (e) { console.error(e); }
+          });
+          return null;
         }
 
         const result = await response.json();
@@ -151,7 +124,6 @@ export default function Navbar() {
           };
 
           // Start with default visibility, then update with API data
-          // Pages not in API response default to visible
           const visibility: Record<string, boolean> = { ...getDefaultVisibility() };
 
           // Convert page names to hrefs and update visibility from API
@@ -162,23 +134,84 @@ export default function Navbar() {
             }
           });
 
-          setPageVisibility(visibility);
-          setVisibilityLoaded(true);
+          pageVisibilityCache = visibility;
+          pageVisibilityFetchPromise = null;
+
+          // Notify subscribers
+          pageVisibilitySubscribers.forEach((cb) => {
+            try { cb(pageVisibilityCache); } catch (e) { console.error(e); }
+          });
+
           console.log("[Navbar] Page visibility loaded successfully");
+          return pageVisibilityCache;
         } else {
           console.warn("[Navbar] Page visibility response invalid:", result);
-          // On error, set all to visible and mark as loaded
-          setVisibilityLoaded(true);
+          pageVisibilityCache = null;
+          pageVisibilityFetchPromise = null;
+          pageVisibilitySubscribers.forEach((cb) => {
+            try { cb(null); } catch (e) { console.error(e); }
+          });
+          return null;
         }
       } catch (error) {
         console.error("[Navbar] Failed to fetch page visibility:", error);
-        // On error, set all to visible and mark as loaded
+        pageVisibilityCache = null;
+        pageVisibilityFetchPromise = null;
+        pageVisibilitySubscribers.forEach((cb) => {
+          try { cb(null); } catch (e) { console.error(e); }
+        });
+        return null;
+      }
+    })();
+
+    return pageVisibilityFetchPromise;
+}
+
+export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
+  const [isMembershipDrawerOpen, setIsMembershipDrawerOpen] = useState(false);
+  const [isFinancialDrawerOpen, setIsFinancialDrawerOpen] = useState(false);
+  const [isDoorAccessDrawerOpen, setIsDoorAccessDrawerOpen] = useState(false);
+  const [isReserveBasementDrawerOpen, setIsReserveBasementDrawerOpen] = useState(false);
+  const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
+  // Start with default visibility - items show immediately, then update when API responds
+  const [pageVisibility, setPageVisibility] = useState<Record<string, boolean>>(getDefaultVisibility());
+  const [visibilityLoaded, setVisibilityLoaded] = useState<boolean>(false);
+  const [resourcesData, setResourcesData] = useState<any | null>(null);
+  const [contactData, setContactData] = useState<any | null>(null);
+  const pathname = usePathname();
+
+  // Fetch page visibility status - use single API call with cache
+  useEffect(() => {
+    let mounted = true;
+
+    // Define subscriber function before adding to set
+    const subscriber = (data: Record<string, boolean> | null) => {
+      if (!mounted) return;
+      if (data) {
+        setPageVisibility(data);
+      }
+      setVisibilityLoaded(true);
+    };
+
+    // Fetch data once if cache is empty, otherwise use cached data
+    fetchPageVisibilityCached(false).then((visibility) => {
+      if (mounted) {
+        if (visibility) {
+          setPageVisibility(visibility);
+        }
         setVisibilityLoaded(true);
       }
-    }
+    });
 
-    // Call immediately on mount
-    fetchPageVisibility();
+    // Subscribe to cache updates (for future real-time updates if needed)
+    pageVisibilitySubscribers.add(subscriber);
+
+    return () => {
+      mounted = false;
+      pageVisibilitySubscribers.delete(subscriber);
+    };
   }, []);
 
   // Lazily fetch resources data on demand (when a resources drawer is opened).
@@ -344,10 +377,11 @@ export default function Navbar() {
             {/* Desktop Menu */}
             <div className="hidden lg:flex flex-wrap items-center gap-x-4 gap-y-2">
               {menuItems.map((item) => {
-                // Items show immediately with default visibility, then update when API responds
-                // Check visibility - hide if explicitly false
-                const isVisible = pageVisibility[item.href] !== undefined ? pageVisibility[item.href] : true;
-                if (!isVisible) return null; // Hide if explicitly false
+                // Hide items until visibility is loaded to avoid flash of disabled links
+                const isVisible =
+                  visibilityLoaded &&
+                  (pageVisibility[item.href] !== undefined ? pageVisibility[item.href] : true);
+                if (!isVisible) return null; // Hide if explicitly false or not yet loaded
 
                 const active = isActive(item.href);
 
@@ -382,8 +416,10 @@ export default function Navbar() {
                         {resourcesMenuItems.map((resource) => {
                           // Check visibility for resource items (skip drawers and external links)
                           if (!resource.drawer && !resource.external) {
-                            // Items show immediately with default visibility, then update when API responds
-                            const isVisible = pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true;
+                            // Hide items until visibility is loaded to avoid flash of disabled links
+                            const isVisible =
+                              visibilityLoaded &&
+                              (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
                             if (!isVisible) return null;
                           }
 
@@ -511,10 +547,11 @@ export default function Navbar() {
           <div className="px-6 py-4 bg-white border-t border-gray-200">
             <div className="flex flex-col space-y-4">
               {menuItems.map((item) => {
-                // Items show immediately with default visibility, then update when API responds
-                // Check visibility - hide if explicitly false
-                const isVisible = pageVisibility[item.href] !== undefined ? pageVisibility[item.href] : true;
-                if (!isVisible) return null; // Hide if explicitly false
+                // Hide items until visibility is loaded to avoid flash of disabled links
+                const isVisible =
+                  visibilityLoaded &&
+                  (pageVisibility[item.href] !== undefined ? pageVisibility[item.href] : true);
+                if (!isVisible) return null; // Hide if explicitly false or not yet loaded
 
                 const active = isActive(item.href);
 
@@ -564,8 +601,10 @@ export default function Navbar() {
                         {resourcesMenuItems.map((resource) => {
                           // Check visibility for resource items (skip drawers and external links)
                           if (!resource.drawer && !resource.external) {
-                            // Items show immediately with default visibility, then update when API responds
-                            const isVisible = pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true;
+                            // Hide items until visibility is loaded to avoid flash of disabled links
+                            const isVisible =
+                              visibilityLoaded &&
+                              (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
                             if (!isVisible) return null;
                           }
 

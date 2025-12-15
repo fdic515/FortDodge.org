@@ -168,9 +168,18 @@ export default function DoorAccessDrawer({
     setDataLoaded(true);
   };
 
-  // Set up subscription (only subscribe, don't fetch on mount)
+  // Fetch data once on mount (page load) - only 1 API call
   useEffect(() => {
     let mounted = true;
+
+    // Fetch data once if cache is empty, otherwise use cached data
+    fetchDoorAccessCached(false).then((data) => {
+      if (mounted && data) {
+        applySrcToState(data);
+      }
+    }).catch((err) => {
+      console.error('[DoorAccessDrawer] fetchDoorAccessCached error:', err);
+    });
 
     // Subscribe to cache updates so we update when cache changes (even when drawer is closed)
     const unsubscribe = subscribeToDoorAccessCache((data) => {
@@ -182,24 +191,6 @@ export default function DoorAccessDrawer({
 
     return () => { mounted = false; unsubscribe(); };
   }, []);
-
-  // Always fetch fresh data when drawer opens
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    let mounted = true;
-
-    // Always force fetch fresh data from database when drawer opens
-    fetchDoorAccessCached(true).then((data) => {
-      if (mounted && data) {
-        applySrcToState(data);
-      }
-    }).catch((err) => {
-      console.error('[DoorAccessDrawer] fetchDoorAccessCached error:', err);
-    });
-
-    return () => { mounted = false; };
-  }, [isOpen]);
 
   // Only use localHeader from Supabase - ignore header prop to avoid showing static data
   // Only show header when data is loaded from Supabase
@@ -221,6 +212,8 @@ export default function DoorAccessDrawer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           formName: "Door Access Request",
+          email: data["email"] || undefined,
+          name: data["fullName"] || undefined,
           subject: `Door access: ${data["fullName"] || "(no name)"}`,
           text: Object.entries(data)
             .map(([k, v]) => `${k}: ${v}`)

@@ -43,7 +43,7 @@ This website serves the Muslim community in Fort Dodge, Iowa, providing:
 - **Content Management System**: Full admin panel for managing all page content
 - **Section-Based Editing**: Edit individual sections of pages independently
 - **Image Management**: Upload, manage, and delete images from Supabase Storage
-- **Page Visibility Control**: Show/hide pages from navigation
+- **Page Visibility Control**: Show/hide pages from navigation using a single cached visibility API
 - **Real-time Updates**: Changes reflect immediately on the frontend
 - **Form Management**: Manage all form submissions and content
 
@@ -240,15 +240,29 @@ Images are stored in Supabase Storage:
 - `GET /api/donate` - Get donation page content
 - `GET /api/resources` - Get resources content
 - `GET /api/contact` - Get contact information
-- `GET /api/page-visibility` - Get page visibility status
+- `GET /api/page-visibility` - Get page visibility status for all navigable pages in a single call (used by the navbar cache)
 
 ### Admin Endpoints
 - `POST /api/home/update-section` - Update home section
 - `POST /api/[page]/update-section` - Update page section
 - `POST /api/upload-image` - Upload image to storage
 - `POST /api/delete-image` - Delete image from storage
-- `POST /api/update-page-visibility` - Update page visibility
+- `POST /api/update-page-visibility` - Update page visibility (navbar uses cached visibility; this endpoint triggers fresh visibility on next load)
 - `POST /api/send-email` - Send email notifications
+
+## 🧭 Navigation & Page Visibility
+
+- **Single Visibility Source**: The public navbar calls `GET /api/page-visibility` once and caches the result in memory on the client.
+- **No Double Calls**: Subsequent navigations reuse the cached visibility; React Strict Mode in development will not cause extra network calls in production.
+- **No Flash of Hidden Links**: Menu items are rendered **only after** visibility has loaded, so pages that are turned off in the admin panel never appear for a split second.
+- **Admin Toggle**: The admin visibility toggle (via `POST /api/update-page-visibility`) updates the `Home` table; the next user page load will pick up the new visibility via the single API call.
+
+## 📥 Drawers & Data Loading
+
+- **Client-Side Caching**: Drawers like **Apply Membership**, **Financial Assistance**, **Door Access**, **Reserve Basement**, and **Contact** use in-memory client caches.
+- **One-Time Fetch on Mount**: Each drawer fetches its content from its `/api/...` endpoint once (on mount) and subscribes to Supabase realtime updates.
+- **No Fetch on Open/Close**: Opening or closing a drawer does **not** trigger extra API calls; they reuse the cached data.
+- **Form Submissions Only**: Drawer forms (membership, financial assistance, contact, door access, basement reservation, etc.) are the only places where drawer-related API calls are made on submit.
 
 ## 🎨 Styling
 

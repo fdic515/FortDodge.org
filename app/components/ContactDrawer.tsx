@@ -121,11 +121,20 @@ export default function ContactDrawer({
     setDataLoaded(true);
   };
 
-  // Set up subscription (only subscribe, don't fetch on mount)
+  // Fetch data once on mount (page load) - only 1 API call
   useEffect(() => {
     if (header || methods) return; // Skip if props are provided
 
     let mounted = true;
+
+    // Fetch data once if cache is empty, otherwise use cached data
+    fetchContactCached(false).then((data) => {
+      if (mounted && data) {
+        applySrcToState(data);
+      }
+    }).catch((err) => {
+      console.error('[ContactDrawer] fetchContactCached error:', err);
+    });
 
     // Subscribe to cache updates so we update when cache changes (even when drawer is closed)
     const unsubscribe = subscribeToContactCache((data) => {
@@ -137,24 +146,6 @@ export default function ContactDrawer({
 
     return () => { mounted = false; unsubscribe(); };
   }, [header, methods]);
-
-  // Always fetch fresh data when drawer opens
-  useEffect(() => {
-    if (!isOpen || header || methods) return; // Skip if props are provided
-    
-    let mounted = true;
-
-    // Always force fetch fresh data from database when drawer opens
-    fetchContactCached(true).then((data) => {
-      if (mounted && data) {
-        applySrcToState(data);
-      }
-    }).catch((err) => {
-      console.error('[ContactDrawer] fetchContactCached error:', err);
-    });
-
-    return () => { mounted = false; };
-  }, [isOpen, header, methods]);
 
   const effectiveHeader = header ?? localHeader;
   const effectiveMethods = methods ?? localMethods;
@@ -169,6 +160,8 @@ export default function ContactDrawer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           formName: "Contact Form",
+          email: data["email"] || undefined,
+          name: data["fullName"] || undefined,
           subject: `Contact form: ${data["fullName"] || "(no name)"}`,
           text: Object.entries(data)
             .map(([k, v]) => `${k}: ${v}`)
