@@ -6,6 +6,10 @@ import { getHomeHeroData } from "@/lib/hero-utils";
 
 import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 
+// Force dynamic rendering to prevent caching on Vercel
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = generateSEOMetadata({
   title: "Request a Visit",
   description:

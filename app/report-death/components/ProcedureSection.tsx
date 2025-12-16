@@ -16,6 +16,8 @@ type ProcedureSectionProps = {
   data?: {
     "procedure-title"?: string;
     "procedure-description"?: string;
+    "contact-paragraph"?: string;
+    "funeral-home-paragraph"?: string;
     "contact-name"?: string;
     "contact-phone"?: string;
     "funeral-home-name"?: string;
@@ -28,6 +30,8 @@ type ProcedureSectionProps = {
     "payment-note"?: string;
     procedureTitle?: string;
     procedureDescription?: string;
+    contactParagraph?: string;
+    funeralHomeParagraph?: string;
     contactName?: string;
     contactPhone?: string;
     funeralHomeName?: string;
@@ -50,6 +54,16 @@ export default function ProcedureSection({ data }: ProcedureSectionProps) {
     data?.["procedure-description"] ||
     data?.procedureDescription ||
     "Preparing the dead for burial is a Farḍ Kifayah duty, meaning that if some Muslims properly carry out this duty, others are exempt. The process includes bathing the deceased, wrapping the body with a shroud, praying, and burying the body. At Fort Dodge Islamic Center, the Cemetery and Burial Committee coordinates arrangements in consultation with the family.";
+
+  const contactParagraph =
+    data?.["contact-paragraph"] ||
+    data?.contactParagraph ||
+    "The family members should contact Br. Yassir Obeid @ (515) 441-191809 as soon as possible to make the necessary arrangements for preparing the dead for burial.";
+
+  const funeralHomeParagraph =
+    data?.["funeral-home-paragraph"] ||
+    data?.funeralHomeParagraph ||
+    "Next, the family members should call Adams Funeral Home in Ames @ (515) 232-5121 to make arrangements to pick up the deceased from the hospital and transport to Adams Funeral Home for washing and preparing the body for burial. The address is: 502 Douglas Ave, Ames, IA";
 
   const contactName =
     data?.["contact-name"] ||
@@ -117,22 +131,16 @@ export default function ProcedureSection({ data }: ProcedureSectionProps) {
 
           <ol className="space-y-6 pl-5 text-base leading-relaxed text-slate-700">
             <li className="marker:text-slate-900">
-              The family members should contact{" "}
-              <span className="font-semibold">
-                {contactName} @ {contactPhone}
-              </span>{" "}
-              as soon as possible to make the necessary arrangements for
-              preparing the dead for burial.
+              <span
+                // contact-paragraph is rich-text
+                dangerouslySetInnerHTML={{ __html: contactParagraph }}
+              />
             </li>
             <li className="marker:text-slate-900">
-              Next, the family members should call{" "}
-              <span className="font-semibold">
-                {funeralHomeName} @ {funeralHomePhone}
-              </span>{" "}
-              to make arrangements to pick up the deceased from the hospital
-              and transport to Adams Funeral Home for washing and preparing the
-              body for burial. The address is:
-              <span className="font-semibold"> {funeralHomeAddress}</span>
+              <span
+                // funeral-home-paragraph is rich-text
+                dangerouslySetInnerHTML={{ __html: funeralHomeParagraph }}
+              />
             </li>
             <li className="marker:text-slate-900">
               The funeral director will take the following information from the
@@ -172,10 +180,6 @@ export default function ProcedureSection({ data }: ProcedureSectionProps) {
               />
             </li>
           </ol>
-
-          <p className="text-sm italic text-slate-500">
-            Source: Authentic Step by Step Illustrated Janazah Guide
-          </p>
         </div>
       </div>
     </section>

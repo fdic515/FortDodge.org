@@ -62,6 +62,8 @@ export default function ReportDeathPageEditor() {
     procedure: [
       { id: "procedure-title", label: "Section Title", type: "text", value: "Procedure" },
       { id: "procedure-description", label: "Procedure Description", type: "rich-text", value: "Preparing the dead for burial is a Farḍ Kifayah duty, meaning that if some Muslims properly carry out this duty, others are exempt. The process includes bathing the deceased, wrapping the body with a shroud, praying, and burying the body. At Fort Dodge Islamic Center, the Cemetery and Burial Committee coordinates arrangements in consultation with the family." },
+      { id: "contact-paragraph", label: "Contact Paragraph (First Step)", type: "rich-text", value: "The family members should contact Br. Yassir Obeid @ (515) 441-191809 as soon as possible to make the necessary arrangements for preparing the dead for burial." },
+      { id: "funeral-home-paragraph", label: "Funeral Home Paragraph (Second Step)", type: "rich-text", value: "Next, the family members should call Adams Funeral Home in Ames @ (515) 232-5121 to make arrangements to pick up the deceased from the hospital and transport to Adams Funeral Home for washing and preparing the body for burial. The address is: 502 Douglas Ave, Ames, IA" },
       { id: "contact-name", label: "Contact Person Name", type: "text", value: "Br. Yassir Obeid" },
       { id: "contact-phone", label: "Contact Phone Number", type: "text", value: "(515) 441-1918" },
       { id: "funeral-home-name", label: "Funeral Home Name", type: "text", value: "Adams Funeral Home in Ames" },
@@ -98,7 +100,6 @@ export default function ReportDeathPageEditor() {
       { id: "ritual-bathing-note", label: "Ritual Bathing Note", type: "rich-text", value: "The ritual bathing and preparation of the body is done by Muslim Brother(s)/Sister(s) in conjunction with a funeral home. Men for the men and women for the women. It is permissible for either spouse to wash the other after death." },
       { id: "janazah-note", label: "Janazah Prayer Note", type: "rich-text", value: "The funeral director and staff will take the deceased to the masjid for the Janazah Prayer then to the cemetery for the burial." },
       { id: "payment-note", label: "Payment Note", type: "rich-text", value: "Approximate cost of burial (may change) [See below]. Make checks payable to Fort Dodge Islamic Center for the total cost of burial." },
-      { id: "source", label: "Source", type: "text", value: "Authentic Step by Step Illustrated Janazah Guide" },
     ],
     costBreakdown: [
       { id: "cost-title", label: "Section Title", type: "text", value: "Approximate Costs" },
@@ -244,6 +245,22 @@ export default function ReportDeathPageEditor() {
                       p.description ||
                       field.value,
                   };
+                case "contact-paragraph":
+                  return {
+                    ...field,
+                    value:
+                      p["contact-paragraph"] ||
+                      p.contactParagraph ||
+                      field.value,
+                  };
+                case "funeral-home-paragraph":
+                  return {
+                    ...field,
+                    value:
+                      p["funeral-home-paragraph"] ||
+                      p.funeralHomeParagraph ||
+                      field.value,
+                  };
                 case "contact-name":
                   return {
                     ...field,
@@ -318,11 +335,6 @@ export default function ReportDeathPageEditor() {
                       p["payment-note"] ||
                       p.paymentNote ||
                       field.value,
-                  };
-                case "source":
-                  return {
-                    ...field,
-                    value: p["source"] || field.value,
                   };
                 default:
                   return field;
