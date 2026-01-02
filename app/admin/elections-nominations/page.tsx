@@ -52,7 +52,7 @@ export default function ElectionsNominationsPageEditor() {
     ],
   });
 
-  const [activeTab, setActiveTab] = useState<string>("hero");
+  const [activeTab, setActiveTab] = useState<string>("election");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 

@@ -92,9 +92,6 @@ function extractFinancialData(src: any) {
     header: null as { title?: string; description?: string } | null,
     overview: [] as string[],
     howToApply: [] as any[],
-    financialFormUrl: "",
-    helpEmail: "",
-    websiteUrl: "",
   };
 
   if (!src) return result;
@@ -141,17 +138,6 @@ function extractFinancialData(src: any) {
     }).filter((item: any) => item.title);
   }
 
-  // Other fields - only set if they exist in database
-  if (contentData['financial-form-url'] || contentData.financialFormUrl) {
-    result.financialFormUrl = contentData['financial-form-url'] || contentData.financialFormUrl || "";
-  }
-  if (contentData['help-email'] || contentData.helpEmail) {
-    result.helpEmail = contentData['help-email'] || contentData.helpEmail || "";
-  }
-  if (contentData['website-url'] || contentData.websiteUrl) {
-    result.websiteUrl = contentData['website-url'] || contentData.websiteUrl || "";
-  }
-
   return result;
 }
 
@@ -165,9 +151,6 @@ export default function FinancialDrawer({
   const [localHeader, setLocalHeader] = useState<{ title?: string; description?: string } | null>(null);
   const [overview, setOverview] = useState<string[]>([]);
   const [howToApply, setHowToApply] = useState<any[]>([]);
-  const [financialFormUrl, setFinancialFormUrl] = useState<string>("");
-  const [helpEmail, setHelpEmail] = useState<string>("");
-  const [websiteUrl, setWebsiteUrl] = useState<string>("");
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Always fetch from database - only use real data from Supabase
@@ -186,9 +169,6 @@ export default function FinancialDrawer({
     setLocalHeader(extracted.header);
     setOverview(extracted.overview);
     setHowToApply(extracted.howToApply);
-    setFinancialFormUrl(extracted.financialFormUrl);
-    setHelpEmail(extracted.helpEmail);
-    setWebsiteUrl(extracted.websiteUrl);
     setDataLoaded(true);
   };
 
@@ -223,9 +203,6 @@ export default function FinancialDrawer({
   // Only use real data from Supabase - no fallbacks
   const displayOverview = overview;
   const displayHowToApply = howToApply;
-  const displayFinancialFormUrl = financialFormUrl;
-  const displayHelpEmail = helpEmail;
-  const displayWebsiteUrl = websiteUrl;
   
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -359,26 +336,6 @@ export default function FinancialDrawer({
                     </div>
                   ))}
                 </div>
-                {displayHelpEmail && (
-                  <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gray-500">
-                    For help, email{" "}
-                    <Link
-                      href={`mailto:${displayHelpEmail}`}
-                      className="text-sky-700 underline underline-offset-2"
-                    >
-                      {displayHelpEmail}
-                    </Link>
-                    {displayWebsiteUrl && (
-                      <>
-                        {" "}or visit our{" "}
-                        <Link href={displayWebsiteUrl} className="text-sky-700 underline underline-offset-2">
-                          website
-                        </Link>
-                      </>
-                    )}
-                    . Your privacy will be respected at every step.
-                  </p>
-                )}
               </div>
             </>
           )}

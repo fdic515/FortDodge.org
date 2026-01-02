@@ -91,7 +91,6 @@ function extractDoorAccessData(src: any) {
     policyIntro: [] as string[],
     policyAgreement: [] as string[],
     policyAgreementIntro: "",
-    membershipDrawerLink: "",
   };
 
   if (!src) return result;
@@ -125,9 +124,6 @@ function extractDoorAccessData(src: any) {
   if (contentData['policy-agreement-intro'] || contentData.policyAgreementIntro) {
     result.policyAgreementIntro = contentData['policy-agreement-intro'] || contentData.policyAgreementIntro || "";
   }
-  if (contentData['membership-drawer-link'] || contentData.membershipDrawerLink) {
-    result.membershipDrawerLink = contentData['membership-drawer-link'] || contentData.membershipDrawerLink || "";
-  }
 
   return result;
 }
@@ -144,7 +140,6 @@ export default function DoorAccessDrawer({
   const [policyIntro, setPolicyIntro] = useState<string[]>([]);
   const [policyAgreement, setPolicyAgreement] = useState<string[]>([]);
   const [policyAgreementIntro, setPolicyAgreementIntro] = useState<string>("");
-  const [membershipDrawerLink, setMembershipDrawerLink] = useState<string>("");
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Always fetch from database - only use real data from Supabase
@@ -164,7 +159,6 @@ export default function DoorAccessDrawer({
     setPolicyIntro(extracted.policyIntro);
     setPolicyAgreement(extracted.policyAgreement);
     setPolicyAgreementIntro(extracted.policyAgreementIntro);
-    setMembershipDrawerLink(extracted.membershipDrawerLink);
     setDataLoaded(true);
   };
 
@@ -200,7 +194,6 @@ export default function DoorAccessDrawer({
   const displayPolicyIntro = policyIntro;
   const displayPolicyAgreement = policyAgreement;
   const displayPolicyAgreementIntro = policyAgreementIntro;
-  const displayMembershipDrawerLink = membershipDrawerLink;
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -416,7 +409,7 @@ export default function DoorAccessDrawer({
                   <span>
                     Yes, please fill the form via the membership drawer{" "}
                     <Link
-                      href={displayMembershipDrawerLink}
+                      href="#"
                       className="text-sky-700 underline underline-offset-2"
                       onClick={(event) => {
                         event.preventDefault();

@@ -91,7 +91,6 @@ function extractReserveBasementData(src: any) {
     contactDetails: [] as any[],
     policyTitle: "",
     policyItems: [] as any[],
-    reservationFormUrl: "",
   };
 
   if (!src) return result;
@@ -149,11 +148,6 @@ function extractReserveBasementData(src: any) {
     }).filter((item: any) => item.title);
   }
 
-  // Reservation form URL
-  if (contentData['form-url'] || contentData.formUrl || contentData.reservationFormUrl) {
-    result.reservationFormUrl = contentData['form-url'] || contentData.formUrl || contentData.reservationFormUrl || "";
-  }
-
   return result;
 }
 
@@ -169,7 +163,6 @@ export default function ReserveBasementDrawer({
   const [contactDetails, setContactDetails] = useState<any[]>([]);
   const [policyTitle, setPolicyTitle] = useState<string>("");
   const [policyItems, setPolicyItems] = useState<any[]>([]);
-  const [reservationFormUrl, setReservationFormUrl] = useState<string>("");
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Always fetch from database - only use real data from Supabase
@@ -190,7 +183,6 @@ export default function ReserveBasementDrawer({
     setContactDetails(extracted.contactDetails);
     setPolicyTitle(extracted.policyTitle);
     setPolicyItems(extracted.policyItems);
-    setReservationFormUrl(extracted.reservationFormUrl);
     setDataLoaded(true);
   };
 
@@ -227,7 +219,6 @@ export default function ReserveBasementDrawer({
   const displayContactDetails = contactDetails;
   const displayPolicyTitle = policyTitle;
   const displayPolicyItems = policyItems;
-  const displayReservationFormUrl = reservationFormUrl;
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;

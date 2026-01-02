@@ -49,9 +49,6 @@ export default function FinancialAssistancePageEditor() {
           { id: "bullets", label: "Bullet Points (one per line)", type: "textarea" },
         ],
       },
-      { id: "financial-form-url", label: "Financial Form URL", type: "url", value: "https://forms.gle/financial-assistance" },
-      { id: "help-email", label: "Help Email", type: "text", value: "treasurer@arqum.org" },
-      { id: "website-url", label: "Website URL", type: "url", value: "https://arqum.org" },
     ],
     // formConfig intentionally omitted so admins cannot edit form fields.
   });
@@ -127,21 +124,6 @@ export default function FinancialAssistancePageEditor() {
                     return { ...field, value: howToApplyItems };
                   }
                   return field;
-                case "financial-form-url":
-                  return {
-                    ...field,
-                    value: contentData["financial-form-url"] || contentData.financialFormUrl || field.value,
-                  };
-                case "help-email":
-                  return {
-                    ...field,
-                    value: contentData["help-email"] || contentData.helpEmail || field.value,
-                  };
-                case "website-url":
-                  return {
-                    ...field,
-                    value: contentData["website-url"] || contentData.websiteUrl || field.value,
-                  };
                 default:
                   return field;
               }

@@ -82,7 +82,7 @@ export default function VisitorsGuidePageEditor() {
     ],
   });
 
-  const [activeTab, setActiveTab] = useState<string>("hero");
+  const [activeTab, setActiveTab] = useState<string>("intro");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 

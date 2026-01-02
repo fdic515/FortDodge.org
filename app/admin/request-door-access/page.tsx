@@ -49,7 +49,6 @@ export default function RequestDoorAccessPageEditor() {
         ],
       },
       { id: "policy-agreement-intro", label: "Policy Agreement Introduction", type: "rich-text", value: "By submitting this form, I confirm that all the information provided is accurate and complete and I have read and agree to abide by the following Fort Dodge Islamic Center's door security policy:" },
-      { id: "membership-drawer-link", label: "Membership Drawer Link", type: "url", value: "https://forms.gle/xtiX7nYHEWLfoEfy8" },
     ],
     // formConfig intentionally omitted so admins cannot edit form fields.
   });
@@ -118,11 +117,6 @@ export default function RequestDoorAccessPageEditor() {
                   return {
                     ...field,
                     value: contentData["policy-agreement-intro"] || contentData.policyAgreementIntro || field.value,
-                  };
-                case "membership-drawer-link":
-                  return {
-                    ...field,
-                    value: contentData["membership-drawer-link"] || contentData.membershipDrawerLink || field.value,
                   };
                 default:
                   return field;

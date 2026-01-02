@@ -51,6 +51,13 @@ export default function SectionEditor({
     setLocalFields(fields);
   }, [fields]);
 
+  // Ensure isExpanded is always true when alwaysExpanded is true
+  useEffect(() => {
+    if (alwaysExpanded) {
+      setIsExpanded(true);
+    }
+  }, [alwaysExpanded]);
+
   const handleFieldChange = (fieldId: string, value: string | any[]) => {
     const updatedFields = localFields.map((field) =>
       field.id === fieldId ? { ...field, value } : field
@@ -429,7 +436,7 @@ export default function SectionEditor({
         </div>
       )}
 
-      {(isExpanded || alwaysExpanded) && (
+      {(alwaysExpanded || isExpanded) && (
         <div className="p-6 space-y-6">
           {localFields.map((field) => (
             <div key={field.id} className="space-y-2">

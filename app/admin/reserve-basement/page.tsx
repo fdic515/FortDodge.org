@@ -69,7 +69,6 @@ export default function ReserveBasementPageEditor() {
           { id: "description", label: "Policy Description", type: "rich-text" },
         ],
       },
-      { id: "form-url", label: "Reservation Form URL", type: "url", value: "https://forms.gle/ReserveBasementForm" },
     ],
     // formConfig intentionally omitted so admins cannot edit form fields.
   });
@@ -142,11 +141,6 @@ export default function ReserveBasementPageEditor() {
                     return { ...field, value: policyItemsData };
                   }
                   return field;
-                case "form-url":
-                  return {
-                    ...field,
-                    value: contentData["form-url"] || contentData.formUrl || contentData.reservationFormUrl || field.value,
-                  };
                 default:
                   return field;
               }

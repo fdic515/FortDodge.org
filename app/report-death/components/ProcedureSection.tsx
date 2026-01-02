@@ -18,11 +18,6 @@ type ProcedureSectionProps = {
     "procedure-description"?: string;
     "contact-paragraph"?: string;
     "funeral-home-paragraph"?: string;
-    "contact-name"?: string;
-    "contact-phone"?: string;
-    "funeral-home-name"?: string;
-    "funeral-home-phone"?: string;
-    "funeral-home-address"?: string;
     "information-needed"?: Array<{ text?: string }>;
     "funeral-services"?: Array<{ text?: string }>;
     "ritual-bathing-note"?: string;
@@ -32,11 +27,6 @@ type ProcedureSectionProps = {
     procedureDescription?: string;
     contactParagraph?: string;
     funeralHomeParagraph?: string;
-    contactName?: string;
-    contactPhone?: string;
-    funeralHomeName?: string;
-    funeralHomePhone?: string;
-    funeralHomeAddress?: string;
     informationNeeded?: string[];
     funeralServices?: string[];
     ritualBathingNote?: string;
@@ -64,27 +54,6 @@ export default function ProcedureSection({ data }: ProcedureSectionProps) {
     data?.["funeral-home-paragraph"] ||
     data?.funeralHomeParagraph ||
     "Next, the family members should call Adams Funeral Home in Ames @ (515) 232-5121 to make arrangements to pick up the deceased from the hospital and transport to Adams Funeral Home for washing and preparing the body for burial. The address is: 502 Douglas Ave, Ames, IA";
-
-  const contactName =
-    data?.["contact-name"] ||
-    data?.contactName ||
-    "Br. Yassir Obeid";
-  const contactPhone =
-    data?.["contact-phone"] ||
-    data?.contactPhone ||
-    "(515) 441-1918";
-  const funeralHomeName =
-    data?.["funeral-home-name"] ||
-    data?.funeralHomeName ||
-    "Adams Funeral Home in Ames";
-  const funeralHomePhone =
-    data?.["funeral-home-phone"] ||
-    data?.funeralHomePhone ||
-    "(515) 232-5121";
-  const funeralHomeAddress =
-    data?.["funeral-home-address"] ||
-    data?.funeralHomeAddress ||
-    "502 Douglas Ave, Ames, IA";
 
   const informationNeeded: string[] =
     (Array.isArray(data?.["information-needed"]) &&

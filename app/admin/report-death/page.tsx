@@ -64,11 +64,6 @@ export default function ReportDeathPageEditor() {
       { id: "procedure-description", label: "Procedure Description", type: "rich-text", value: "Preparing the dead for burial is a Farḍ Kifayah duty, meaning that if some Muslims properly carry out this duty, others are exempt. The process includes bathing the deceased, wrapping the body with a shroud, praying, and burying the body. At Fort Dodge Islamic Center, the Cemetery and Burial Committee coordinates arrangements in consultation with the family." },
       { id: "contact-paragraph", label: "Contact Paragraph (First Step)", type: "rich-text", value: "The family members should contact Br. Yassir Obeid @ (515) 441-191809 as soon as possible to make the necessary arrangements for preparing the dead for burial." },
       { id: "funeral-home-paragraph", label: "Funeral Home Paragraph (Second Step)", type: "rich-text", value: "Next, the family members should call Adams Funeral Home in Ames @ (515) 232-5121 to make arrangements to pick up the deceased from the hospital and transport to Adams Funeral Home for washing and preparing the body for burial. The address is: 502 Douglas Ave, Ames, IA" },
-      { id: "contact-name", label: "Contact Person Name", type: "text", value: "Br. Yassir Obeid" },
-      { id: "contact-phone", label: "Contact Phone Number", type: "text", value: "(515) 441-1918" },
-      { id: "funeral-home-name", label: "Funeral Home Name", type: "text", value: "Adams Funeral Home in Ames" },
-      { id: "funeral-home-phone", label: "Funeral Home Phone", type: "text", value: "(515) 232-5121" },
-      { id: "funeral-home-address", label: "Funeral Home Address", type: "text", value: "502 Douglas Ave, Ames, IA" },
       {
         id: "information-needed",
         label: "Information Needed by Funeral Director",
@@ -259,43 +254,6 @@ export default function ReportDeathPageEditor() {
                     value:
                       p["funeral-home-paragraph"] ||
                       p.funeralHomeParagraph ||
-                      field.value,
-                  };
-                case "contact-name":
-                  return {
-                    ...field,
-                    value: p["contact-name"] || p.contactName || field.value,
-                  };
-                case "contact-phone":
-                  return {
-                    ...field,
-                    value:
-                      p["contact-phone"] ||
-                      p.contactPhone ||
-                      field.value,
-                  };
-                case "funeral-home-name":
-                  return {
-                    ...field,
-                    value:
-                      p["funeral-home-name"] ||
-                      p.funeralHomeName ||
-                      field.value,
-                  };
-                case "funeral-home-phone":
-                  return {
-                    ...field,
-                    value:
-                      p["funeral-home-phone"] ||
-                      p.funeralHomePhone ||
-                      field.value,
-                  };
-                case "funeral-home-address":
-                  return {
-                    ...field,
-                    value:
-                      p["funeral-home-address"] ||
-                      p.funeralHomeAddress ||
                       field.value,
                   };
                 case "information-needed":

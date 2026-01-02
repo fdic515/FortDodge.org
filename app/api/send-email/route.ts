@@ -44,10 +44,36 @@ export async function POST(req: Request) {
             console.log("[email] SMTP connection verified successfully");
         } catch (verifyError: any) {
             console.error("[email] SMTP verification failed:", verifyError);
+            
+            // Detect Gmail-specific authentication errors
+            const isGmail = host.includes("gmail.com");
+            const isAuthError = verifyError?.code === "EAUTH" || verifyError?.responseCode === 535;
+            const isGmailAuthError = isGmail && isAuthError;
+            
+            let errorMessage = "Unable to connect to SMTP server. Please check your SMTP configuration.";
+            let helpMessage = "";
+            
+            if (isGmailAuthError) {
+                errorMessage = "Gmail authentication failed: Username and Password not accepted.";
+                helpMessage = "For Gmail, you MUST use an App Password (not your regular password). " +
+                    "Steps: 1) Enable 2-Factor Authentication on your Google account, " +
+                    "2) Go to Google Account → Security → App passwords, " +
+                    "3) Generate a new app password for 'Mail', " +
+                    "4) Use the 16-character app password (no spaces) as SMTP_PASS in .env.local, " +
+                    "5) Restart your server after updating .env.local";
+            } else if (isAuthError) {
+                errorMessage = "SMTP authentication failed. Please check your SMTP_USER and SMTP_PASS.";
+                helpMessage = "Verify your credentials are correct in .env.local and restart the server.";
+            } else if (verifyError?.code === "ECONNECTION") {
+                errorMessage = "Could not connect to SMTP server.";
+                helpMessage = "Check your SMTP_HOST and SMTP_PORT settings, and ensure your firewall allows outbound connections.";
+            }
+            
             return NextResponse.json({ 
-                error: "SMTP connection failed",
+                error: errorMessage,
                 details: verifyError?.message || String(verifyError),
-                message: "Unable to connect to SMTP server. Please check your SMTP configuration."
+                help: helpMessage,
+                code: verifyError?.code || verifyError?.responseCode,
             }, { status: 500 });
         }
 
@@ -88,15 +114,38 @@ export async function POST(req: Request) {
         console.error("[email] Error sending email:", err);
         let errorMessage = err?.message || String(err);
         let errorDetails = err?.code || err?.responseCode || "Unknown error";
+        let helpMessage = "";
 
-        if (err?.code === "EAUTH") errorMessage = "SMTP authentication failed. Please check your SMTP_USER and SMTP_PASS.";
-        else if (err?.code === "ECONNECTION") errorMessage = "Could not connect to SMTP server. Please check your SMTP_HOST and SMTP_PORT.";
-        else if (err?.code === "ETIMEDOUT") errorMessage = "SMTP connection timed out. Please check your network connection and SMTP settings.";
+        // Detect Gmail-specific authentication errors
+        const emailConfig = env.email;
+        const isGmail = emailConfig?.smtpHost?.includes("gmail.com");
+        const isAuthError = err?.code === "EAUTH" || err?.responseCode === 535;
+        const isGmailAuthError = isGmail && isAuthError;
+
+        if (isGmailAuthError) {
+            errorMessage = "Gmail authentication failed: Username and Password not accepted.";
+            helpMessage = "For Gmail, you MUST use an App Password (not your regular password). " +
+                "Steps: 1) Enable 2-Factor Authentication on your Google account, " +
+                "2) Go to Google Account → Security → App passwords, " +
+                "3) Generate a new app password for 'Mail', " +
+                "4) Use the 16-character app password (no spaces) as SMTP_PASS in .env.local, " +
+                "5) Restart your server after updating .env.local";
+        } else if (err?.code === "EAUTH") {
+            errorMessage = "SMTP authentication failed. Please check your SMTP_USER and SMTP_PASS.";
+            helpMessage = "Verify your credentials are correct in .env.local and restart the server.";
+        } else if (err?.code === "ECONNECTION") {
+            errorMessage = "Could not connect to SMTP server. Please check your SMTP_HOST and SMTP_PORT.";
+            helpMessage = "Verify your SMTP settings and ensure your firewall allows outbound connections.";
+        } else if (err?.code === "ETIMEDOUT") {
+            errorMessage = "SMTP connection timed out. Please check your network connection and SMTP settings.";
+            helpMessage = "Check your network connection and verify SMTP_HOST and SMTP_PORT are correct.";
+        }
 
         return NextResponse.json({ 
             error: errorMessage,
             details: errorDetails,
-            code: err?.code,
+            help: helpMessage,
+            code: err?.code || err?.responseCode,
         }, { status: 500 });
     }
 }
