@@ -113,9 +113,8 @@ function ToastItem({
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Trigger entrance animation
-    const timer = setTimeout(() => setIsVisible(true), 10);
-    return () => clearTimeout(timer);
+    // Trigger entrance animation immediately
+    setIsVisible(true);
   }, []);
 
   useEffect(() => {

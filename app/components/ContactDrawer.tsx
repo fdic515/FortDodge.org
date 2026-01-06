@@ -154,6 +154,11 @@ export default function ContactDrawer({
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
 
+    // Show success toast immediately
+    toast.success("Thank you for your message! We will get back to you soon.");
+    form.reset();
+    onClose();
+
     try {
       const res = await fetch(`/api/send-email`, {
         method: "POST",
@@ -171,10 +176,6 @@ export default function ContactDrawer({
 
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Failed to send message");
-
-      toast.success("Thank you for your message! We will get back to you soon.");
-      form.reset();
-      onClose();
     } catch (err: any) {
       console.error(err);
       toast.error("There was an error sending your message. Please try again later.");

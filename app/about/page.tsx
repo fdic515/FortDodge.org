@@ -21,7 +21,7 @@ import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 export const metadata = generateSEOMetadata({
   title: "About Us",
   description:
-    "Learn about Fort Dodge Islamic Center, a non-profit organization founded in 2002, providing prayer, learning, and community services to Muslims in Fort Dodge, Iowa. Discover our mission, governance structure, board of directors, and programs.",
+    "Learn about Fort Dodge Islamic Centers, a non-profit organization founded in 2002, providing prayer, learning, and community services to Muslims in Fort Dodge, Iowa. Discover our mission, governance structure, board of directors, and programs.",
   path: "/about",
   keywords: [
     "about Fort Dodge Islamic Center",

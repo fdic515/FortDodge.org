@@ -199,6 +199,11 @@ export default function DoorAccessDrawer({
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
 
+    // Show success toast immediately
+    toast.success("Your request was submitted. We will contact you by email with the access code if approved.");
+    form.reset();
+    onClose();
+
     try {
       const res = await fetch(`/api/send-email`, {
         method: "POST",
@@ -216,10 +221,6 @@ export default function DoorAccessDrawer({
 
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Failed to send message");
-
-      toast.success("Your request was submitted. We will contact you by email with the access code if approved.");
-      form.reset();
-      onClose();
     } catch (err: any) {
       console.error(err);
       toast.error("There was an error submitting the request. Please try again later.");
