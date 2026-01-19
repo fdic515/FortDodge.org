@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import PageEditorLayout from "../components/PageEditorLayout";
 import SectionEditor from "../components/SectionEditor";
+import VisibilityToggle from "../components/VisibilityToggle";
 import { FinancialAssistanceSectionConfig } from "@/lib/financial-assistance.service";
 import { toast } from "@/app/components/Toaster";
 
@@ -268,6 +269,7 @@ export default function FinancialAssistancePageEditor() {
         </div>
       ) : (
         <div className="space-y-6">
+          <VisibilityToggle pageName="financial-assistance" apiEndpoint="/api/financial-assistance" />
           <SectionEditor
             sectionId="header"
             sectionTitle="Header Section"

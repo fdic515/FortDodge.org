@@ -238,6 +238,14 @@ export default function NewMuslimPageEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
+  // Restore active tab from localStorage after hydration (client-side only)
+  useEffect(() => {
+    const savedTab = localStorage.getItem("activeTab-new-muslim");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchNewMuslimData() {
       try {
@@ -563,6 +571,8 @@ export default function NewMuslimPageEditor() {
 
       if (result.ok) {
         toast.success(`${getSectionTitle(sectionId)} saved successfully!`);
+        // Save current active tab before reload
+        localStorage.setItem("activeTab-new-muslim", activeTab);
         window.location.reload();
       } else {
         toast.error(result.message || "Failed to save");
@@ -607,7 +617,10 @@ export default function NewMuslimPageEditor() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    localStorage.setItem("activeTab-new-muslim", tab.id);
+                  }}
                   className={`
                     cursor-pointer mr-2 flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium border-2 transition-colors last:mr-0
                     ${

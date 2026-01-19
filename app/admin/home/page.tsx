@@ -13,6 +13,14 @@ export default function HomePageEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
+  // Restore active tab from localStorage after hydration (client-side only)
+  useEffect(() => {
+    const savedTab = localStorage.getItem("activeTab-home");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
   // Fetch current data from Supabase on mount
   useEffect(() => {
     async function fetchHomeData() {
@@ -382,6 +390,8 @@ export default function HomePageEditor() {
       
       if (result.ok) {
         toast.success(`${getSectionTitle(sectionId)} saved successfully!`);
+        // Save current active tab before reload
+        localStorage.setItem("activeTab-home", activeTab);
         // Refresh the page data after successful save
         window.location.reload();
       } else {
@@ -431,7 +441,10 @@ export default function HomePageEditor() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    localStorage.setItem("activeTab-home", tab.id);
+                  }}
                   className={`
                     cursor-pointer mr-2 flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium border-2 transition-colors last:mr-0
                     ${

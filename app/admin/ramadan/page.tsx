@@ -16,6 +16,14 @@ export default function RamadanPageEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
+  // Restore active tab from localStorage after hydration (client-side only)
+  useEffect(() => {
+    const savedTab = localStorage.getItem("activeTab-ramadan");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchRamadanData() {
       try {
@@ -169,6 +177,62 @@ export default function RamadanPageEditor() {
             );
           }
 
+          // Map existing Community Iftars data from Supabase into editor fields
+          const iftarsSource = sectionsSource.community_iftars ?? null;
+          if (iftarsSource?.data) {
+            const iftarsData = iftarsSource.data as any;
+            transformed.community_iftars = transformed.community_iftars.map(
+              (field) => {
+                switch (field.id) {
+                  case "iftar-title":
+                    return {
+                      ...field,
+                      value: iftarsData.title !== null && iftarsData.title !== undefined
+                        ? iftarsData.title
+                        : field.value,
+                    };
+                  case "iftar-note":
+                    return {
+                      ...field,
+                      value: iftarsData.note !== null && iftarsData.note !== undefined
+                        ? iftarsData.note
+                        : field.value,
+                    };
+                  case "iftar-intro":
+                    return {
+                      ...field,
+                      value: iftarsData.intro !== null && iftarsData.intro !== undefined
+                        ? iftarsData.intro
+                        : field.value,
+                    };
+                  case "iftar-email-text":
+                    return {
+                      ...field,
+                      value: iftarsData.emailText !== null && iftarsData.emailText !== undefined
+                        ? iftarsData.emailText
+                        : field.value,
+                    };
+                  case "iftar-email-address":
+                    return {
+                      ...field,
+                      value: iftarsData.emailAddress !== null && iftarsData.emailAddress !== undefined
+                        ? iftarsData.emailAddress
+                        : field.value,
+                    };
+                  case "iftar-dates":
+                    return {
+                      ...field,
+                      value: Array.isArray(iftarsData.iftarDates)
+                        ? iftarsData.iftarDates
+                        : field.value,
+                    };
+                  default:
+                    return field;
+                }
+              }
+            );
+          }
+
           setSections(transformed);
         }
       } catch (error) {
@@ -182,10 +246,20 @@ export default function RamadanPageEditor() {
   }, []);
 
   const handleSectionUpdate = (sectionId: string, fields: SectionField[]) => {
-    setSections((prev) => ({
-      ...prev,
-      [sectionId]: fields,
-    }));
+    setSections((prev) => {
+      const updated = {
+        ...prev,
+        [sectionId]: fields,
+      };
+      // Log update for community_iftars to verify state is updating
+      if (sectionId === "community_iftars") {
+        console.log("[Ramadan Admin] Updating community_iftars state:", {
+          fieldCount: fields.length,
+          fields: fields.map(f => ({ id: f.id, type: f.type, hasValue: f.value !== undefined && f.value !== null })),
+        });
+      }
+      return updated;
+    });
   };
 
   const transformFieldsToSupabase = (
@@ -194,12 +268,17 @@ export default function RamadanPageEditor() {
   ): any => {
     const data: any = {};
 
+    // Collect all field values, ensuring we capture the actual current values
     fields.forEach((field) => {
       if (field.type === "array" || field.type === "table") {
+        // For arrays, preserve the exact array value
         data[field.id] = Array.isArray(field.value) ? field.value : [];
+      } else if (field.type === "rich-text") {
+        // For rich-text, preserve the HTML string exactly as it is (even if empty)
+        data[field.id] = typeof field.value === "string" ? field.value : "";
       } else {
-        data[field.id] =
-          typeof field.value === "string" ? field.value : "";
+        // For other types (text, url, etc.), preserve the string value
+        data[field.id] = typeof field.value === "string" ? field.value : "";
       }
     });
 
@@ -240,10 +319,30 @@ export default function RamadanPageEditor() {
           : [],
         disclaimer: d["zakat-disclaimer"] || "",
       }),
-      community_iftars: (d) => ({
-        intro: d["iftar-intro"] || "",
-        iftarDates: Array.isArray(d["iftar-dates"]) ? d["iftar-dates"] : [],
-      }),
+      community_iftars: (d) => {
+        // Ensure we capture all fields - title, note, intro (rich-text), emailText, emailAddress, and iftarDates (array)
+        const result: any = {
+          title: d.hasOwnProperty("iftar-title") 
+            ? (d["iftar-title"] !== null && d["iftar-title"] !== undefined ? d["iftar-title"] : "")
+            : "",
+          note: d.hasOwnProperty("iftar-note") 
+            ? (d["iftar-note"] !== null && d["iftar-note"] !== undefined ? d["iftar-note"] : "")
+            : "",
+          intro: d.hasOwnProperty("iftar-intro") 
+            ? (d["iftar-intro"] !== null && d["iftar-intro"] !== undefined ? d["iftar-intro"] : "")
+            : "",
+          emailText: d.hasOwnProperty("iftar-email-text") 
+            ? (d["iftar-email-text"] !== null && d["iftar-email-text"] !== undefined ? d["iftar-email-text"] : "")
+            : "",
+          emailAddress: d.hasOwnProperty("iftar-email-address") 
+            ? (d["iftar-email-address"] !== null && d["iftar-email-address"] !== undefined ? d["iftar-email-address"] : "")
+            : "",
+          iftarDates: d.hasOwnProperty("iftar-dates") && Array.isArray(d["iftar-dates"])
+            ? d["iftar-dates"]
+            : (d.hasOwnProperty("iftar-dates") ? [] : []),
+        };
+        return result;
+      },
     };
 
     const mapper = mapping[sectionId];
@@ -254,8 +353,37 @@ export default function RamadanPageEditor() {
     setSaving((prev) => ({ ...prev, [sectionId]: true }));
 
     try {
+      // Get the latest fields from state
       const fields = sections[sectionId];
+      if (!fields || fields.length === 0) {
+        toast.error("No fields found to save");
+        setSaving((prev) => ({ ...prev, [sectionId]: false }));
+        return;
+      }
+      
+      // Log what we're about to save for community_iftars
+      if (sectionId === "community_iftars") {
+        console.log("[Ramadan Admin] Saving community_iftars - Fields:", fields.map(f => ({
+          id: f.id,
+          type: f.type,
+          valueType: typeof f.value,
+          isArray: Array.isArray(f.value),
+          arrayLength: Array.isArray(f.value) ? f.value.length : undefined,
+          valuePreview: typeof f.value === "string" ? f.value.substring(0, 50) : (Array.isArray(f.value) ? `Array(${f.value.length})` : String(f.value)),
+        })));
+      }
+      
       const sectionData = transformFieldsToSupabase(sectionId, fields);
+      
+      // Log the transformed data for community_iftars
+      if (sectionId === "community_iftars") {
+        console.log("[Ramadan Admin] Transformed community_iftars data:", {
+          intro: sectionData.intro ? sectionData.intro.substring(0, 100) : "(empty)",
+          introLength: sectionData.intro ? sectionData.intro.length : 0,
+          iftarDatesCount: Array.isArray(sectionData.iftarDates) ? sectionData.iftarDates.length : 0,
+          iftarDates: sectionData.iftarDates,
+        });
+      }
 
       const supabaseKey = sectionId;
 
@@ -279,6 +407,8 @@ export default function RamadanPageEditor() {
 
       if (result.ok) {
         toast.success(`${sectionId} saved successfully!`);
+        // Save current active tab before reload
+        localStorage.setItem("activeTab-ramadan", activeTab);
         window.location.reload();
       } else {
         toast.error(result.message || "Failed to save");
@@ -313,7 +443,10 @@ export default function RamadanPageEditor() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    localStorage.setItem("activeTab-ramadan", tab.id);
+                  }}
                   className={`
                     cursor-pointer mr-2 flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium border-2 transition-colors last:mr-0
                     ${activeTab === tab.id

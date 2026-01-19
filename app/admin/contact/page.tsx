@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import PageEditorLayout from "../components/PageEditorLayout";
 import SectionEditor from "../components/SectionEditor";
+import VisibilityToggle from "../components/VisibilityToggle";
 import { toast } from "@/app/components/Toaster";
 
 type SectionField = {
@@ -257,6 +258,7 @@ export default function ContactPageEditor() {
                 </div>
             ) : (
                 <div className="space-y-6">
+                    <VisibilityToggle pageName="contact" apiEndpoint="/api/contact" />
                     <SectionEditor
                         sectionId="header"
                         sectionTitle="Header Section"

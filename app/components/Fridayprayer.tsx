@@ -105,9 +105,9 @@ export default function FridayPrayers({ data }: FridayPrayersProps) {
         </div>
 
         <div className="grid gap-6 border-t border-white/10 bg-white text-slate-900 px-8 py-6 sm:grid-cols-2">
-          {khutbahs.map((k) => (
+          {khutbahs.map((k, index) => (
             <div
-              key={k.slot}
+              key={`${k.slot || 'khutbah'}-${k.time || ''}-${k.imam || ''}-${index}`}
               className="rounded-2xl border border-slate-200 p-6 shadow-sm"
             >
               <p className="text-xs uppercase tracking-wide text-amber-500">

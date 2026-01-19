@@ -3,12 +3,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type AdminNavbarProps = {
   onToggleSidebar?: () => void;
 };
 
 export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Remove authentication from localStorage
+    localStorage.removeItem("adminAuth");
+    // Redirect to /admin (which will show login page)
+    router.push("/admin");
+  };
+
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
@@ -54,7 +64,7 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
           </Link>
         </div>
 
-        {/* Right side: View Site button */}
+        {/* Right side: View Site button and Logout */}
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -64,6 +74,12 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
           >
             View Site
           </Link>
+          <button
+            onClick={handleLogout}
+            className="rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 transition-colors duration-200 hover:border-red-400 hover:bg-red-50 sm:px-4 sm:py-2 sm:text-sm"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </nav>

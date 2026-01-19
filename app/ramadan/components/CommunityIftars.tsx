@@ -1,6 +1,10 @@
 type CommunityIftarsProps = {
   data?: {
+    title?: string | null;
+    note?: string | null;
     intro?: string | null;
+    emailText?: string | null;
+    emailAddress?: string | null;
     iftarDates?: { date: string; community: string }[] | null;
   } | null;
 };
@@ -16,9 +20,13 @@ const defaultIftarDates = [
 ];
 
 export default function CommunityIftars({ data }: CommunityIftarsProps) {
+  const title = data?.title || "Five Saturdays";
+  const note = data?.note || "No open community iftar on March 1st";
   const intro =
     data?.intro ||
     "Each Saturday features a community-led iftar. Hosts welcome everyone to connect, share a meal, and reflect together.";
+  const emailText = data?.emailText || "To reserve a date, email Sr. Kylie Anderson at";
+  const emailAddress = data?.emailAddress || "social@arqum.org";
   const iftarDates = data?.iftarDates || defaultIftarDates;
   return (
     <section className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-lg sm:rounded-3xl sm:p-6 md:p-8">
@@ -27,23 +35,27 @@ export default function CommunityIftars({ data }: CommunityIftarsProps) {
           Community Iftars
         </p>
         <h2 className="text-xl font-semibold text-sky-800 sm:text-2xl md:text-3xl">
-          <span className="block sm:inline">Five Saturdays</span>
-          <span className="hidden sm:inline"> • </span>
-          <span className="block mt-1 text-base sm:mt-0 sm:inline sm:text-inherit">
-            No open community iftar on March 1st
-          </span>
+          <span className="block sm:inline">{title}</span>
+          {note && (
+            <>
+              <span className="hidden sm:inline"> • </span>
+              <span className="block mt-1 text-base sm:mt-0 sm:inline sm:text-inherit">
+                {note}
+              </span>
+            </>
+          )}
         </h2>
         <p className="text-sm text-sky-800/80 sm:text-base">
           <span
             // Render HTML from the admin rich text editor for the intro text.
             dangerouslySetInnerHTML={{ __html: intro }}
           />{" "}
-          To reserve a date, email Sr. Kylie Anderson at{" "}
+          {emailText}{" "}
           <a
-            href="mailto:social@arqum.org"
+            href={`mailto:${emailAddress}`}
             className="font-semibold text-sky-800 underline underline-offset-4 break-all sm:break-normal"
           >
-            social@arqum.org
+            {emailAddress}
           </a>
           .
         </p>

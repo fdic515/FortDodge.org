@@ -139,11 +139,35 @@ export const getRamadanDefaultSections = (): Record<string, SectionField[]> => (
   ],
   community_iftars: [
     {
+      id: "iftar-title",
+      label: "Title (e.g., 'Five Saturdays')",
+      type: "text",
+      value: "Five Saturdays",
+    },
+    {
+      id: "iftar-note",
+      label: "Note Text (e.g., 'No open community iftar on March 1st')",
+      type: "text",
+      value: "No open community iftar on March 1st",
+    },
+    {
       id: "iftar-intro",
       label: "Intro Text",
       type: "rich-text",
       value:
         "Each Saturday features a community-led iftar. Hosts welcome everyone to connect and share a meal.",
+    },
+    {
+      id: "iftar-email-text",
+      label: "Email Text (text before email address)",
+      type: "text",
+      value: "To reserve a date, email Sr. Kylie Anderson at",
+    },
+    {
+      id: "iftar-email-address",
+      label: "Email Address",
+      type: "text",
+      value: "social@arqum.org",
     },
     {
       id: "iftar-dates",

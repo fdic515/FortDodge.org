@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import PageEditorLayout from "../components/PageEditorLayout";
 import SectionEditor from "../components/SectionEditor";
+import VisibilityToggle from "../components/VisibilityToggle";
 import { ApplyMembershipSectionConfig } from "@/lib/apply-membership.service";
 import { toast } from "@/app/components/Toaster";
 
@@ -299,6 +300,7 @@ export default function ApplyRenewMembershipPageEditor() {
         </div>
       ) : (
         <div className="space-y-6">
+          <VisibilityToggle pageName="apply-renew-membership" apiEndpoint="/api/apply-membership" />
           <SectionEditor
             sectionId="header"
             sectionTitle="Header Section"

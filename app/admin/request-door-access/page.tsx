@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import PageEditorLayout from "../components/PageEditorLayout";
 import SectionEditor from "../components/SectionEditor";
+import VisibilityToggle from "../components/VisibilityToggle";
 import { RequestDoorAccessSectionConfig } from "@/lib/request-door-access.service";
 import { toast } from "@/app/components/Toaster";
 
@@ -261,6 +262,7 @@ export default function RequestDoorAccessPageEditor() {
         </div>
       ) : (
         <div className="space-y-6">
+          <VisibilityToggle pageName="request-door-access" apiEndpoint="/api/request-door-access" />
           <SectionEditor
             sectionId="header"
             sectionTitle="Header Section"

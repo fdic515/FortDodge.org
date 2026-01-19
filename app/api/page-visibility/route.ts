@@ -46,6 +46,11 @@ export async function GET() {
       "islamic-prayer",
       "islamic-school",
       "elections-nominations",
+      "apply-renew-membership",
+      "financial-assistance",
+      "request-door-access",
+      "reserve-basement",
+      "contact",
     ];
 
     defaultPages.forEach((page) => {

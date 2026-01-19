@@ -58,6 +58,8 @@ export default function InfoBanner({ data }: InfoBannerProps) {
   const [isReserveBasementDrawerOpen, setIsReserveBasementDrawerOpen] = useState(false);
   const [isDoorAccessDrawerOpen, setIsDoorAccessDrawerOpen] = useState(false);
   const [isFinancialDrawerOpen, setIsFinancialDrawerOpen] = useState(false);
+  const [pageVisibility, setPageVisibility] = useState<Record<string, boolean>>({});
+  const [visibilityLoaded, setVisibilityLoaded] = useState<boolean>(false);
   const scrollPositionRef = useRef(0);
 
   const overlayActive = isMembershipDrawerOpen || isContactDrawerOpen || isReserveBasementDrawerOpen || isDoorAccessDrawerOpen || isFinancialDrawerOpen;
@@ -134,6 +136,98 @@ export default function InfoBanner({ data }: InfoBannerProps) {
     };
   });
 
+  // Fetch page visibility status
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchVisibility() {
+      try {
+        const response = await fetch("/api/page-visibility", { cache: 'no-store' });
+        if (!response.ok) return;
+        
+        const result = await response.json();
+        if (result && result.ok && result.visibility) {
+          // Map page names to hrefs
+          const hrefMap: Record<string, string> = {
+            "home": "/",
+            "ramadan": "/ramadan",
+            "donate": "/donate",
+            "new-muslim": "/new-musilm",
+            "report-death": "/report-death",
+            "resources": "/resources",
+            "about": "/about",
+            "request-a-speaker": "/resources/request-a-speaker",
+            "request-a-visit": "/resources/request-a-visit",
+            "visitors-guide": "/resources/visitors-guide",
+            "islamic-prayer": "/resources/islamic-prayer",
+            "islamic-school": "/resources/islamic-school",
+            "elections-nominations": "/resources/elections-nominations",
+            "apply-renew-membership": "/resources/apply-renew-membership",
+            "financial-assistance": "/resources#financial-assistance",
+            "request-door-access": "/resources#request-door-access",
+            "reserve-basement": "/resources#reserve-basement",
+            "contact": "/contact",
+          };
+
+          const visibility: Record<string, boolean> = {};
+          Object.entries(result.visibility).forEach(([pageName, isVisible]) => {
+            const href = hrefMap[pageName];
+            if (href) {
+              visibility[href] = isVisible as boolean;
+            }
+          });
+
+          if (mounted) {
+            setPageVisibility(visibility);
+            setVisibilityLoaded(true);
+          }
+        }
+      } catch (error) {
+        console.error("[InfoBanner] Failed to fetch page visibility:", error);
+        if (mounted) {
+          setVisibilityLoaded(true);
+        }
+      }
+    }
+
+    fetchVisibility();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Map drawer types to page names for visibility checking
+  const drawerToPageName: Record<string, string> = {
+    "membership": "apply-renew-membership",
+    "financialAssistance": "financial-assistance",
+    "financial": "financial-assistance",
+    "doorAccess": "request-door-access",
+    "reserveBasement": "reserve-basement",
+    "contact": "contact",
+  };
+
+  // Check if a drawer is visible
+  const isDrawerVisible = (drawerType?: string): boolean => {
+    if (!drawerType) return true; // If no drawer type, show by default
+    const pageName = drawerToPageName[drawerType];
+    if (!pageName) return true; // If drawer type not mapped, show by default
+    
+    // Check visibility - default to true if not loaded yet or not set
+    if (!visibilityLoaded) return true; // Show while loading to avoid flash
+    const hrefMap: Record<string, string> = {
+      "apply-renew-membership": "/resources/apply-renew-membership",
+      "financial-assistance": "/resources#financial-assistance",
+      "request-door-access": "/resources#request-door-access",
+      "reserve-basement": "/resources#reserve-basement",
+      "contact": "/contact",
+    };
+    const href = hrefMap[pageName];
+    if (!href) return true; // If no href mapping, show by default
+    
+    return pageVisibility[href] !== undefined ? pageVisibility[href] : true;
+  };
+
   // Auto-detect drawer type from URL patterns if not explicitly set
   const iconsWithDrawers = icons.map((item) => {
     if (item.drawer) return item;
@@ -177,6 +271,11 @@ export default function InfoBanner({ data }: InfoBannerProps) {
           {iconsWithDrawers.map((item) => {
             if (!item.label || !item.href || !item.src) {
               console.warn("[InfoBanner] Missing required fields:", { label: item.label, href: item.href, src: item.src });
+              return null;
+            }
+
+            // Check drawer visibility - hide if drawer is marked as inactive
+            if (item.drawer && !isDrawerVisible(item.drawer)) {
               return null;
             }
 

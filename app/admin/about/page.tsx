@@ -114,6 +114,14 @@ export default function AboutPageEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
+  // Restore active tab from localStorage after hydration (client-side only)
+  useEffect(() => {
+    const savedTab = localStorage.getItem("activeTab-about");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchAboutData() {
       try {
@@ -452,6 +460,8 @@ export default function AboutPageEditor() {
 
       if (result.ok) {
         toast.success(`${getSectionTitle(sectionId)} saved successfully!`);
+        // Save current active tab before reload
+        localStorage.setItem("activeTab-about", activeTab);
         window.location.reload();
       } else {
         toast.error(result.message || "Failed to save");
@@ -498,7 +508,10 @@ export default function AboutPageEditor() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    localStorage.setItem("activeTab-about", tab.id);
+                  }}
                   className={`
                     cursor-pointer mr-2 flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-xs sm:text-sm font-medium border-2 transition-colors last:mr-0
                     ${

@@ -121,6 +121,11 @@ async function fetchPageVisibilityCached(force = false): Promise<Record<string, 
             "islamic-prayer": "/resources/islamic-prayer",
             "islamic-school": "/resources/islamic-school",
             "elections-nominations": "/resources/elections-nominations",
+            "apply-renew-membership": "/resources/apply-renew-membership",
+            "financial-assistance": "/resources#financial-assistance",
+            "request-door-access": "/resources#request-door-access",
+            "reserve-basement": "/resources#reserve-basement",
+            "contact": "/contact",
           };
 
           // Start with default visibility, then update with API data
@@ -263,6 +268,38 @@ export default function Navbar() {
       return pathname === "/";
     }
     return pathname?.startsWith(href);
+  };
+
+  // Map page names to hrefs for drawer visibility checking
+  const drawerHrefMap: Record<string, string> = {
+    "apply-renew-membership": "/resources/apply-renew-membership",
+    "financial-assistance": "/resources#financial-assistance",
+    "request-door-access": "/resources#request-door-access",
+    "reserve-basement": "/resources#reserve-basement",
+    "contact": "/contact",
+  };
+
+  // Map drawer types to page names for visibility checking
+  const drawerToPageName: Record<string, string> = {
+    "membership": "apply-renew-membership",
+    "financial": "financial-assistance",
+    "doorAccess": "request-door-access",
+    "reserveBasement": "reserve-basement",
+    "contact": "contact",
+  };
+
+  // Check if a drawer is visible
+  const isDrawerVisible = (drawerType?: string): boolean => {
+    if (!drawerType) return true; // If no drawer type, show by default
+    const pageName = drawerToPageName[drawerType];
+    if (!pageName) return true; // If drawer type not mapped, show by default
+    
+    // Check visibility - default to true if not loaded yet or not set
+    if (!visibilityLoaded) return true; // Show while loading to avoid flash
+    const href = drawerHrefMap[pageName];
+    if (!href) return true; // If no href mapping, show by default
+    
+    return pageVisibility[href] !== undefined ? pageVisibility[href] : true;
   };
 
   const overlayActive = isMenuOpen || isMembershipDrawerOpen || isFinancialDrawerOpen || isDoorAccessDrawerOpen || isReserveBasementDrawerOpen || isContactDrawerOpen;
@@ -414,13 +451,18 @@ export default function Navbar() {
 
                       <div className="invisible absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 transform rounded-none border border-gray-200 bg-white/98 py-1.5 text-sm text-gray-800 opacity-0 shadow-lg shadow-gray-300 ring-1 ring-black/5 transition-all duration-150 group-hover:visible group-hover:opacity-100">
                         {resourcesMenuItems.map((resource) => {
-                          // Check visibility for resource items (skip drawers and external links)
-                          if (!resource.drawer && !resource.external) {
-                            // Hide items until visibility is loaded to avoid flash of disabled links
-                            const isVisible =
-                              visibilityLoaded &&
-                              (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
-                            if (!isVisible) return null;
+                          // Check visibility for resource items (skip external links)
+                          if (!resource.external) {
+                            // For drawer items, check drawer visibility
+                            if (resource.drawer) {
+                              if (!isDrawerVisible(resource.drawer)) return null;
+                            } else {
+                              // For regular pages, check page visibility
+                              const isVisible =
+                                visibilityLoaded &&
+                                (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
+                              if (!isVisible) return null;
+                            }
                           }
 
                           const activeResource = isResourceActive(resource.href);
@@ -462,6 +504,10 @@ export default function Navbar() {
                 }
 
                 if (item.label === "Contact Us") {
+                  // Check visibility for Contact drawer
+                  const contactVisible = isDrawerVisible("contact");
+                  if (!contactVisible) return null;
+                  
                   return (
                     <button
                       key={item.label}
@@ -599,13 +645,18 @@ export default function Navbar() {
                           View all resources
                         </Link>
                         {resourcesMenuItems.map((resource) => {
-                          // Check visibility for resource items (skip drawers and external links)
-                          if (!resource.drawer && !resource.external) {
-                            // Hide items until visibility is loaded to avoid flash of disabled links
-                            const isVisible =
-                              visibilityLoaded &&
-                              (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
-                            if (!isVisible) return null;
+                          // Check visibility for resource items (skip external links)
+                          if (!resource.external) {
+                            // For drawer items, check drawer visibility
+                            if (resource.drawer) {
+                              if (!isDrawerVisible(resource.drawer)) return null;
+                            } else {
+                              // For regular pages, check page visibility
+                              const isVisible =
+                                visibilityLoaded &&
+                                (pageVisibility[resource.href] !== undefined ? pageVisibility[resource.href] : true);
+                              if (!isVisible) return null;
+                            }
                           }
 
                           const activeResource = isResourceActive(resource.href);

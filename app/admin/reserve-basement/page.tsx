@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import PageEditorLayout from "../components/PageEditorLayout";
 import SectionEditor from "../components/SectionEditor";
+import VisibilityToggle from "../components/VisibilityToggle";
 import { ReserveBasementSectionConfig } from "@/lib/reserve-basement.service";
 import { toast } from "@/app/components/Toaster";
 
@@ -284,6 +285,7 @@ export default function ReserveBasementPageEditor() {
         </div>
       ) : (
         <div className="space-y-6">
+          <VisibilityToggle pageName="reserve-basement" apiEndpoint="/api/reserve-basement" />
           <SectionEditor
             sectionId="header"
             sectionTitle="Header Section"
