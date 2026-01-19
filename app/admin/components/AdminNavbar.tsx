@@ -15,6 +15,8 @@ export default function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
   const handleLogout = () => {
     // Remove authentication from localStorage
     localStorage.removeItem("adminAuth");
+    // Dispatch custom event to notify layout of auth change
+    window.dispatchEvent(new Event("adminAuthChange"));
     // Redirect to /admin (which will show login page)
     router.push("/admin");
   };

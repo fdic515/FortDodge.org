@@ -20,6 +20,8 @@ export default function AdminLoginPage() {
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       // Save login state in localStorage
       localStorage.setItem("adminAuth", "true");
+      // Dispatch custom event to notify layout of auth change
+      window.dispatchEvent(new Event("adminAuthChange"));
       // Redirect to /admin
       router.push("/admin");
     } else {
