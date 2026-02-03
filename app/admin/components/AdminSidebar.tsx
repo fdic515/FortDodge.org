@@ -39,6 +39,7 @@ const menuItems: MenuItem[] = [
       { label: "Contact", href: "/admin/contact" },
     ],
   },
+  { label: "Settings", href: "/admin/settings" },
 ];
 
 type AdminSidebarProps = {

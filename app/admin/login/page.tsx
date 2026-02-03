@@ -9,23 +9,34 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Hard-coded credentials
-    const ADMIN_EMAIL = "Fdic515@gmail.com";
-    const ADMIN_PASSWORD = "admin123";
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Save login state in localStorage
-      localStorage.setItem("adminAuth", "true");
-      // Dispatch custom event to notify layout of auth change
-      window.dispatchEvent(new Event("adminAuthChange"));
-      // Redirect to /admin
-      router.push("/admin");
-    } else {
-      setError("Invalid email or password");
+      const data = await response.json();
+
+      if (data.ok) {
+        // Save login state in localStorage
+        localStorage.setItem("adminAuth", "true");
+        // Dispatch custom event to notify layout of auth change
+        window.dispatchEvent(new Event("adminAuthChange"));
+        // Redirect to /admin
+        router.push("/admin");
+      } else {
+        setError(data.message || "Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An error occurred. Please try again.");
     }
   };
 
