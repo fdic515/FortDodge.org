@@ -23,7 +23,7 @@ export const metadata = generateSEOMetadata({
   keywords: [
     "donate to Fort Dodge Islamic Center",
     "Islamic center donations",
-    "zakat",
+    "zakats",
     "sadaqah",
     "charity Fort Dodge",
     "Muslim donations",
